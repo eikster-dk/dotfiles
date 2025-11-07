@@ -1,0 +1,23 @@
+[alias]
+	co = checkout
+	br = branch
+	ci = commit
+	st = status
+[pull]
+	rebase = true
+[init]
+	defaultBranch = master
+[user]
+	name = Eik Emil Bengtsson
+  email = git.noreply@e16n.dev
+	signingkey = ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIq+zookh594RW+ltkDYWDAvyzgDtzEGdQFj3U4tvfit
+[diff]
+  algorithm = histogram
+  colorMoved = plain
+  mnemonicPrefix = true
+[gpg]
+	format = ssh
+[gpg "ssh"]
+	program = /opt/1Password/op-ssh-sign
+[commit]
+	gpgsign = true
