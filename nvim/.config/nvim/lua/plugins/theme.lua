@@ -1,0 +1,1 @@
+/home/eikster/.config/omarchy/current/theme/neovim.lua
