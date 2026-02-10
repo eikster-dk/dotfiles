@@ -1,0 +1,56 @@
+# Theming
+font: JetBrainsMono Nerd Font 12
+background: "#111c18"
+color: "#fbf1c7"
+border: "#8ec07c"
+separator: " ➜ "
+border_width: 2
+corner_r: 10
+padding: 15 # Defaults to corner_r
+rows_per_column: 5 # No limit by default
+column_padding: 25 # Defaults to padding
+
+# Anchor and margin
+anchor: bottom-right # One of center, left, right, top, bottom, bottom-left, top-left, etc.
+# Only relevant when anchor is not center
+margin_right: 0
+margin_bottom: 0
+margin_left: 0
+margin_top: 0
+
+
+# Permits key bindings that conflict with compositor key bindings.
+# Default is `false`.
+inhibit_compositor_keyboard_shortcuts: true
+
+# Try to guess the correct keyboard layout to use. Default is `false`.
+auto_kbd_layout: true
+
+menu:
+  - key: "p"
+    desc: 1Password
+    cmd: uwsm-app 1password
+  - key: "k"
+    desc: Omarchy Keybindings
+    cmd: omarchy-menu-keybindings
+  - key: "s"
+    desc: Screenshotting
+    submenu:
+      - key: "c"
+        desc: capture to clipboard
+        cmd: omarchy-cmd-screenshot smart clipboard
+      - key: "r"
+        desc: capture region to clipboard
+        cmd: omarchy-cmd-screenshot region clipboard
+  - key: "c"
+    desc: Config
+    submenu:
+      - key: "a"
+        desc: Audio controls
+        cmd: omarchy-launch-audio
+      - key: "b"
+        desc: Bluetooth controls
+        cmd: omarchy-launch-bluetooth
+      - key: "w"
+        desc: Wifi controls
+        cmd:  omarchy-launch-wifi
