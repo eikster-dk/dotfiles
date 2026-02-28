@@ -72,12 +72,12 @@ menu:
   - key: "d"
     desc: Development
     submenu:
-      - key: "t"
+      - key: "T"
         desc: Terminal
         cmd: uwsm-app -- xdg-terminal-exec
-      - key: "T"
+      - key: "t"
         desc: Tmux
-        cmd: uwsm-app -- xdg-terminal-exec tmux new
+        cmd: uwsm-app -- xdg-terminal-exec tmux new-session -A -s main
       - key: "n"
         desc: Editor (nvim)
         cmd: omarchy-launch-editor
