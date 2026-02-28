@@ -1,0 +1,32 @@
+#!/bin/bash
+
+# Update wlr-which-key colors when theme changes
+
+COLORS_FILE="$HOME/.config/omarchy/current/theme/colors.toml"
+WLR_CONFIG="$HOME/.config/wlr-which-key/config.yaml"
+
+if [[ ! -f "$COLORS_FILE" ]] || [[ ! -f "$WLR_CONFIG" ]]; then
+  exit 0
+fi
+
+# Read colors from theme
+get_color() {
+  grep "^$1 = " "$COLORS_FILE" | cut -d'"' -f2
+}
+
+BACKGROUND=$(get_color "background")
+FOREGROUND=$(get_color "foreground")
+ACCENT=$(get_color "accent")
+
+# Update wlr-which-key config
+if [[ -n "$BACKGROUND" ]]; then
+  sed -i "s/^background: .*/background: \"$BACKGROUND\"/" "$WLR_CONFIG"
+fi
+
+if [[ -n "$FOREGROUND" ]]; then
+  sed -i "s/^color: .*/color: \"$FOREGROUND\"/" "$WLR_CONFIG"
+fi
+
+if [[ -n "$ACCENT" ]]; then
+  sed -i "s/^border: .*/border: \"$ACCENT\"/" "$WLR_CONFIG"
+fi

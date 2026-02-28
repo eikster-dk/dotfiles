@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# Dispatcher: runs theme-set hooks for all tools that have them
+# Each tool can have its own hook at ~/.config/<tool>/hooks/theme-set
+
+HOOK_NAME="theme-set"
+
+for hook in "$HOME"/.config/*/hooks/"$HOOK_NAME"; do
+  # Skip omarchy hooks to avoid recursion
+  [[ "$hook" == */.config/omarchy/hooks/* ]] && continue
+  if [[ -x "$hook" ]]; then
+    "$hook" "$@"
+  fi
+done

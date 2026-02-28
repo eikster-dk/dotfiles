@@ -1,8 +1,8 @@
 # Theming
 font: JetBrainsMono Nerd Font 12
 background: "#111c18"
-color: "#fbf1c7"
-border: "#8ec07c"
+color: "#C1C497"
+border: "#509475"
 separator: " ➜ "
 border_width: 2
 corner_r: 10
@@ -52,11 +52,8 @@ menu:
         desc: Signal
         cmd: omarchy-launch-or-focus signal "uwsm-app -- signal-desktop"
       - key: "a"
-        desc: ChatGPT
-        cmd: omarchy-launch-webapp "https://chatgpt.com"
-      - key: "A"
-        desc: Grok
-        cmd: omarchy-launch-webapp "https://grok.com"
+        desc: GPT
+        cmd: omarchy-launch-webapp "https://claude.ai/new"
       - key: "c"
         desc: Calendar
         cmd: omarchy-launch-webapp "https://app.hey.com/calendar/weeks/"
