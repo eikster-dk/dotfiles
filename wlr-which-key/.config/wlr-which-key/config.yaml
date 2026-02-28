@@ -28,8 +28,65 @@ auto_kbd_layout: true
 
 menu:
   - key: "p"
-    desc: 1Password
-    cmd: uwsm-app 1password
+    desc: Programs
+    submenu:
+      - key: "p"
+        desc: 1Password
+        cmd: uwsm-app -- 1password
+      - key: "b"
+        desc: Browser
+        cmd: omarchy-launch-browser
+      - key: "B"
+        desc: Browser (private)
+        cmd: omarchy-launch-browser --private
+      - key: "f"
+        desc: File manager
+        cmd: uwsm-app -- nautilus --new-window
+      - key: "m"
+        desc: Music (Spotify)
+        cmd: omarchy-launch-or-focus spotify
+      - key: "o"
+        desc: Obsidian
+        cmd: omarchy-launch-or-focus "^obsidian$" "uwsm-app -- obsidian -disable-gpu --enable-wayland-ime"
+      - key: "g"
+        desc: Signal
+        cmd: omarchy-launch-or-focus signal "uwsm-app -- signal-desktop"
+      - key: "a"
+        desc: ChatGPT
+        cmd: omarchy-launch-webapp "https://chatgpt.com"
+      - key: "A"
+        desc: Grok
+        cmd: omarchy-launch-webapp "https://grok.com"
+      - key: "c"
+        desc: Calendar
+        cmd: omarchy-launch-webapp "https://app.hey.com/calendar/weeks/"
+      - key: "e"
+        desc: Email
+        cmd: omarchy-launch-webapp "https://app.hey.com"
+      - key: "y"
+        desc: YouTube
+        cmd: omarchy-launch-webapp "https://youtube.com/"
+      - key: "x"
+        desc: X
+        cmd: omarchy-launch-webapp "https://x.com/"
+  - key: "d"
+    desc: Development
+    submenu:
+      - key: "t"
+        desc: Terminal
+        cmd: uwsm-app -- xdg-terminal-exec
+      - key: "T"
+        desc: Tmux
+        cmd: uwsm-app -- xdg-terminal-exec tmux new
+      - key: "n"
+        desc: Editor (nvim)
+        cmd: omarchy-launch-editor
+      - key: "a"
+        desc: Activity (btop)
+        cmd: omarchy-launch-tui btop
+      - key: "d"
+        desc: Lazydocker
+        cmd: omarchy-launch-tui lazydocker
   - key: "k"
     desc: Omarchy Keybindings
     cmd: omarchy-menu-keybindings
@@ -53,4 +110,4 @@ menu:
         cmd: omarchy-launch-bluetooth
       - key: "w"
         desc: Wifi controls
-        cmd:  omarchy-launch-wifi
+        cmd: omarchy-launch-wifi
