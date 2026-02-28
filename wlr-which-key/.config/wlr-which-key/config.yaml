@@ -1,8 +1,8 @@
 # Theming
 font: JetBrainsMono Nerd Font 12
-background: "#111c18"
-color: "#C1C497"
-border: "#509475"
+background: "#060B1E"
+color: "#ffcead"
+border: "#7d82d9"
 separator: " ➜ "
 border_width: 2
 corner_r: 10
@@ -108,3 +108,27 @@ menu:
       - key: "w"
         desc: Wifi controls
         cmd: omarchy-launch-wifi
+  - key: "l"
+    desc: Learn
+    submenu:
+      - key: "k"
+        desc: Keybindings
+        cmd: omarchy-menu-keybindings
+      - key: "o"
+        desc: Omarchy Manual
+        cmd: omarchy-launch-webapp "https://learn.omacom.io/2/the-omarchy-manual"
+      - key: "h"
+        desc: Hyprland Wiki
+        cmd: omarchy-launch-webapp "https://wiki.hypr.land/"
+      - key: "a"
+        desc: Arch Wiki
+        cmd: omarchy-launch-webapp "https://wiki.archlinux.org/title/Main_page"
+      - key: "n"
+        desc: Neovim/LazyVim
+        cmd: omarchy-launch-webapp "https://www.lazyvim.org/keymaps"
+      - key: "b"
+        desc: Bash Cheatsheet
+        cmd: omarchy-launch-webapp "https://devhints.io/bash"
+      - key: "e"
+        desc: Effect docs
+        cmd: omarchy-launch-webapp "https://effect.website/docs"
