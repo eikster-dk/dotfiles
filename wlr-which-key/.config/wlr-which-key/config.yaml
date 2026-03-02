@@ -66,6 +66,9 @@ menu:
       - key: "x"
         desc: X
         cmd: omarchy-launch-webapp "https://x.com/"
+      - key: "v"
+        desc: Vesktop
+        cmd: uwsm-app -- vesktop
   - key: "d"
     desc: Development
     submenu:
@@ -84,6 +87,18 @@ menu:
       - key: "d"
         desc: Lazydocker
         cmd: omarchy-launch-tui lazydocker
+  - key: "w"
+    desc: Work
+    submenu:
+      - key: "o"
+        desc: Outlook
+        cmd: omarchy-launch-webapp "https://outlook.office.com"
+      - key: "t"
+        desc: Teams
+        cmd: omarchy-launch-webapp "https://teams.microsoft.com"
+      - key: "s"
+        desc: Freetrailer Slack
+        cmd: omarchy-launch-webapp "https://app.slack.com/client/T041LVAP5UL"
   - key: "k"
     desc: Omarchy Keybindings
     cmd: omarchy-menu-keybindings
