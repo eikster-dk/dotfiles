@@ -32,7 +32,7 @@ mkdir -p "$project_path"
 cd "$project_path"
 
 # Initialize git and create on GitHub
-git init
+git init -b main
 gh repo create "$repo_name" --private --source=. --remote=origin
 
 # Add to zoxide so it shows up in tmux-sessionizer
