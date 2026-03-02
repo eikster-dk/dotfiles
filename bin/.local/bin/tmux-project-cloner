@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+
+set -e
+
+# Select project type
+project_type=$(printf "personal\nwork" | fzf --prompt "Project type: " --height=~50%)
+
+if [[ -z $project_type ]]; then
+  exit 0
+fi
+
+# List repos from GitHub (personal + all orgs) or allow manual entry
+# Fetch all in parallel for speed
+repos=$(
+  {
+    gh repo list --limit 100 --json nameWithOwner -q '.[].nameWithOwner' &
+    for org in $(gh org list 2>/dev/null); do
+      gh repo list "$org" --limit 100 --json nameWithOwner -q '.[].nameWithOwner' &
+    done
+    wait
+  } 2>/dev/null | sort -u
+)
+
+repo_name=$(
+  echo "$repos" |
+    fzf --prompt "Select repo: " \
+        --header "Type to filter or enter owner/repo for unlisted repos" \
+        --print-query |
+    tail -1
+)
+
+if [[ -z $repo_name ]]; then
+  exit 0
+fi
+
+# Extract just the repo name (without owner/org prefix)
+folder_name="${repo_name##*/}"
+project_path="$PROJECTS/$project_type/$folder_name"
+
+# Check if folder already exists
+if [[ -d $project_path ]]; then
+  echo "Project already exists at $project_path"
+  exit 1
+fi
+
+# Clone the repository
+gh repo clone "$repo_name" "$project_path"
+
+# Add to zoxide so it shows up in tmux-sessionizer
+zoxide add "$project_path"
+
+echo "Cloned project to $project_path"
+
+# Open in tmux-sessionizer
+exec ~/.local/bin/tmux-sessionizer "$project_type/$folder_name"
