@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+
+set -e
+
+# Select project type
+project_type=$(printf "personal\nwork" | fzf --prompt "Project type: " --height=~50%)
+
+if [[ -z $project_type ]]; then
+  exit 0
+fi
+
+# Get repo name (format: owner/repo-name)
+read -p "Repo name (e.g., eikster-dk/repo-name): " repo_name
+
+if [[ -z $repo_name ]]; then
+  echo "No repo name provided"
+  exit 1
+fi
+
+# Extract just the repo name (without owner/org prefix)
+folder_name="${repo_name##*/}"
+project_path="$PROJECTS/$project_type/$folder_name"
+
+# Check if folder already exists
+if [[ -d $project_path ]]; then
+  echo "Project already exists at $project_path"
+  exit 1
+fi
+
+# Create the directory
+mkdir -p "$project_path"
+cd "$project_path"
+
+# Initialize git and create on GitHub
+git init
+gh repo create "$repo_name" --private --source=. --remote=origin
+
+# Add to zoxide so it shows up in tmux-sessionizer
+zoxide add "$project_path"
+
+echo "Created project at $project_path"
+
+# Open in tmux-sessionizer
+exec ~/.local/bin/tmux-sessionizer "$project_type/$folder_name"
