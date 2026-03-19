@@ -2,6 +2,13 @@
 
 set -e
 
+# Check if 1Password SSH agent is running (fail fast)
+if ! SSH_AUTH_SOCK="$HOME/.1password/agent.sock" ssh-add -l &>/dev/null; then
+  echo "1Password SSH agent not running. Please open 1Password and enable the SSH agent."
+  read -n 1 -s -r -p "Press any key to exit..."
+  exit 1
+fi
+
 # Select project type
 project_type=$(printf "personal\nwork" | fzf --prompt "Project type: " --height=~50%)
 
