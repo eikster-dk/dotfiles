@@ -1,0 +1,3 @@
+[submodule ".context/omarchy"]
+	path = .context/omarchy
+	url = git@github.com:basecamp/omarchy.git
