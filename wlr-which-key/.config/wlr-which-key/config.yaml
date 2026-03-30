@@ -1,8 +1,8 @@
 # Theming
 font: JetBrainsMono Nerd Font 12
-background: "#060B1E"
-color: "#ffcead"
-border: "#7d82d9"
+background: "#111c18"
+color: "#C1C497"
+border: "#509475"
 separator: " ➜ "
 border_width: 2
 corner_r: 10
@@ -147,3 +147,21 @@ menu:
       - key: "e"
         desc: Effect docs
         cmd: omarchy-launch-webapp "https://effect.website/docs"
+  - key: "q"
+    desc: System
+    submenu:
+      - key: "l"
+        desc: Lock
+        cmd: omarchy-lock-screen
+      - key: "L"
+        desc: Lock + Screen Off
+        cmd: $HOME/.local/bin/omarchy-lock-screen-off
+      - key: "s"
+        desc: Suspend
+        cmd: systemctl suspend
+      - key: "r"
+        desc: Restart
+        cmd: omarchy-system-reboot
+      - key: "q"
+        desc: Shutdown
+        cmd: omarchy-system-shutdown
