@@ -1,0 +1,25 @@
+#!/bin/bash
+
+# Locks the screen and immediately turns off the display using DPMS.
+# Based on omarchy-lock-screen but adds display power off.
+
+# Lock the screen
+pidof hyprlock || hyprlock &
+
+# Set keyboard layout to default (first layout)
+hyprctl switchxkblayout all 0 > /dev/null 2>&1
+
+# Ensure 1password is locked
+if pgrep -x "1password" >/dev/null; then
+  1password --lock &
+fi
+
+# Avoid running screensaver when locked
+pkill -f org.omarchy.screensaver
+
+# Wait for hyprlock to fully start, then turn off display
+# Run in subshell to detach from parent process (needed when called from walker)
+(
+  sleep 0.5
+  hyprctl dispatch dpms off
+) &
