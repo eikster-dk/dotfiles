@@ -1,0 +1,19 @@
+-- Automatically switch to vertical display when rows are too wide
+\x auto
+
+-- Use less as the pager (-S disables line wrapping for wide tables)
+\setenv PAGER 'less -SRF'
+\pset pager on
+
+-- Full grid borders with unicode box-drawing characters
+\pset border 2
+\pset linestyle unicode
+
+-- Make NULLs visible
+\pset null '(null)'
+
+-- Wrap long column values instead of truncating
+\pset format wrapped
+
+-- Show query execution time
+\timing on
