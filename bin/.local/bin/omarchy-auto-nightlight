@@ -7,6 +7,7 @@ CACHE_HOME=${XDG_CACHE_HOME:-$HOME/.cache}
 CONFIG_FILE="$CONFIG_HOME/omarchy/auto-nightlight.conf"
 CACHE_DIR="$CACHE_HOME/omarchy/auto-nightlight"
 SUN_CACHE="$CACHE_DIR/sun.env"
+STATE_FILE="$CACHE_DIR/state.env"
 
 NIGHT_TEMP=4000
 DAY_TEMP=6000
@@ -116,6 +117,71 @@ current_sun_mode() {
   fi
 }
 
+today() {
+  date +%F || fail "Unable to read system date."
+}
+
+skip_for_today() {
+  [[ -f $STATE_FILE ]] || return 1
+
+  local today
+  today=$(today)
+
+  # shellcheck source=/dev/null
+  source "$STATE_FILE"
+
+  [[ ${MANUAL_OVERRIDE_DATE:-} == "$today" ]]
+}
+
+current_temperature() {
+  local output
+  output=$(hyprctl hyprsunset temperature 2>/dev/null) || return 1
+
+  [[ $output =~ ([0-9]+) ]] || return 1
+  printf '%s\n' "${BASH_REMATCH[1]}"
+}
+
+record_manual_override() {
+  local today
+  today=$(today)
+
+  ensure_cache_dir
+  {
+    printf 'MANUAL_OVERRIDE_DATE=%q\n' "$today"
+    printf 'LAST_APPLIED_DATE=%q\n' "${LAST_APPLIED_DATE:-}"
+    printf 'LAST_APPLIED_TEMP=%q\n' "${LAST_APPLIED_TEMP:-}"
+  } > "$STATE_FILE" || fail "Unable to write nightlight state: $STATE_FILE"
+}
+
+manual_override_detected() {
+  [[ -f $STATE_FILE ]] || return 1
+
+  local today current_temp
+  today=$(today)
+
+  # shellcheck source=/dev/null
+  source "$STATE_FILE"
+
+  [[ ${LAST_APPLIED_DATE:-} == "$today" ]] || return 1
+  [[ -n ${LAST_APPLIED_TEMP:-} ]] || return 1
+
+  current_temp=$(current_temperature) || return 1
+  [[ -n $current_temp ]] || return 1
+  [[ $current_temp != "$LAST_APPLIED_TEMP" ]]
+}
+
+record_applied_temperature() {
+  local target_temp=$1
+  local today
+  today=$(today)
+
+  ensure_cache_dir
+  {
+    printf 'LAST_APPLIED_DATE=%q\n' "$today"
+    printf 'LAST_APPLIED_TEMP=%q\n' "$target_temp"
+  } > "$STATE_FILE" || fail "Unable to write nightlight state: $STATE_FILE"
+}
+
 ensure_hyprsunset() {
   if pgrep -x hyprsunset >/dev/null; then
     return 0
@@ -131,14 +197,11 @@ ensure_hyprsunset() {
   pgrep -x hyprsunset >/dev/null || fail "Unable to start hyprsunset."
 }
 
-restart_nightlighted_waybar() {
-  if [[ -f $CONFIG_HOME/waybar/config.jsonc ]] && grep -q "custom/nightlight" "$CONFIG_HOME/waybar/config.jsonc"; then
-    omarchy-restart-waybar >/dev/null 2>&1 || true
-  fi
-}
-
 apply_nightlight() {
   local mode target_temp
+
+  skip_for_today && return 0
+
   mode=$(current_sun_mode) || fail "Unable to calculate sunrise and sunset."
 
   if [[ $mode == "night" ]]; then
@@ -148,8 +211,13 @@ apply_nightlight() {
   fi
 
   ensure_hyprsunset
+  if manual_override_detected; then
+    record_manual_override
+    return 0
+  fi
+
   hyprctl hyprsunset temperature "$target_temp" >/dev/null || fail "Unable to set hyprsunset temperature to $target_temp."
-  restart_nightlighted_waybar
+  record_applied_temperature "$target_temp"
 }
 
 case ${1:-apply} in
