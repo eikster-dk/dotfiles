@@ -1,0 +1,163 @@
+#!/bin/bash
+
+set -o pipefail
+
+CONFIG_HOME=${XDG_CONFIG_HOME:-$HOME/.config}
+CACHE_HOME=${XDG_CACHE_HOME:-$HOME/.cache}
+CONFIG_FILE="$CONFIG_HOME/omarchy/auto-nightlight.conf"
+CACHE_DIR="$CACHE_HOME/omarchy/auto-nightlight"
+SUN_CACHE="$CACHE_DIR/sun.env"
+
+NIGHT_TEMP=4000
+DAY_TEMP=6000
+SUN_OFFSET_MINUTES=0
+
+if [[ -f $CONFIG_FILE ]]; then
+  # shellcheck source=/dev/null
+  source "$CONFIG_FILE"
+fi
+
+notify_failure() {
+  local message=$1
+
+  if command -v notify-send >/dev/null 2>&1; then
+    notify-send --urgency=critical "Nightlight failed" "$message"
+  fi
+
+  printf 'omarchy-auto-nightlight: %s\n' "$message" >&2
+}
+
+fail() {
+  notify_failure "$1"
+  exit 1
+}
+
+ensure_cache_dir() {
+  mkdir -p "$CACHE_DIR" || fail "Unable to create cache directory: $CACHE_DIR"
+}
+
+sun_cache_is_fresh() {
+  [[ -f $SUN_CACHE ]] || return 1
+
+  local today wttr_location
+  today=$(date +%F) || return 1
+  wttr_location=$(wttr_location)
+
+  # shellcheck source=/dev/null
+  source "$SUN_CACHE"
+
+  [[ ${SUN_CACHE_DATE:-} == "$today" ]] || return 1
+  [[ ${SUN_CACHE_WTTR_LOCATION:-} == "$wttr_location" ]] || return 1
+  [[ -n ${SUNRISE_EPOCH:-} && -n ${SUNSET_EPOCH:-} ]]
+}
+
+wttr_location() {
+  if [[ -n ${LATITUDE:-} && -n ${LONGITUDE:-} ]]; then
+    printf '%s,%s\n' "$LATITUDE" "$LONGITUDE"
+  else
+    printf '\n'
+  fi
+}
+
+wttr_url() {
+  local location
+  location=$(wttr_location)
+
+  if [[ -n $location ]]; then
+    printf 'https://wttr.in/%s?format=j1\n' "$location"
+  else
+    printf 'https://wttr.in/?format=j1\n'
+  fi
+}
+
+refresh_sun_cache() {
+  command -v curl >/dev/null 2>&1 || fail "curl is required to fetch sunrise and sunset from wttr.in."
+  command -v jq >/dev/null 2>&1 || fail "jq is required to parse wttr.in sunrise and sunset data."
+
+  local today response weather_date sunrise sunset sunrise_epoch sunset_epoch wttr_location query area
+  today=$(date +%F) || fail "Unable to read system date."
+  wttr_location=$(wttr_location)
+  response=$(curl --fail --silent --show-error --max-time 10 "$(wttr_url)") || fail "Unable to fetch sunrise and sunset from wttr.in."
+  weather_date=$(jq -er '.weather[0].date' <<< "$response") || fail "Unable to parse wttr.in date."
+  sunrise=$(jq -er '.weather[0].astronomy[0].sunrise' <<< "$response") || fail "Unable to parse wttr.in sunrise."
+  sunset=$(jq -er '.weather[0].astronomy[0].sunset' <<< "$response") || fail "Unable to parse wttr.in sunset."
+  query=$(jq -er '.request[0].query // ""' <<< "$response") || query=""
+  area=$(jq -er '.nearest_area[0].areaName[0].value // ""' <<< "$response") || area=""
+
+  sunrise_epoch=$(date -d "$weather_date $sunrise" +%s) || fail "Unable to parse wttr.in sunrise time: $weather_date $sunrise"
+  sunset_epoch=$(date -d "$weather_date $sunset" +%s) || fail "Unable to parse wttr.in sunset time: $weather_date $sunset"
+  sunrise_epoch=$((sunrise_epoch + (SUN_OFFSET_MINUTES * 60)))
+  sunset_epoch=$((sunset_epoch + (SUN_OFFSET_MINUTES * 60)))
+
+  ensure_cache_dir
+  {
+    printf 'SUN_CACHE_DATE=%q\n' "$today"
+    printf 'SUN_CACHE_WTTR_LOCATION=%q\n' "$wttr_location"
+    printf 'SUN_CACHE_WTTR_QUERY=%q\n' "$query"
+    printf 'SUN_CACHE_WTTR_AREA=%q\n' "$area"
+    printf 'SUNRISE_EPOCH=%q\n' "$sunrise_epoch"
+    printf 'SUNSET_EPOCH=%q\n' "$sunset_epoch"
+  } > "$SUN_CACHE" || fail "Unable to write sun cache: $SUN_CACHE"
+}
+
+current_sun_mode() {
+  local now
+
+  sun_cache_is_fresh || refresh_sun_cache
+  # shellcheck source=/dev/null
+  source "$SUN_CACHE"
+
+  now=$(date +%s) || fail "Unable to read system time."
+
+  if ((now < SUNRISE_EPOCH || now >= SUNSET_EPOCH)); then
+    printf 'night\n'
+  else
+    printf 'day\n'
+  fi
+}
+
+ensure_hyprsunset() {
+  if pgrep -x hyprsunset >/dev/null; then
+    return 0
+  fi
+
+  if command -v uwsm-app >/dev/null 2>&1; then
+    setsid uwsm-app -- hyprsunset >/dev/null 2>&1 &
+  else
+    setsid hyprsunset >/dev/null 2>&1 &
+  fi
+
+  sleep 1
+  pgrep -x hyprsunset >/dev/null || fail "Unable to start hyprsunset."
+}
+
+restart_nightlighted_waybar() {
+  if [[ -f $CONFIG_HOME/waybar/config.jsonc ]] && grep -q "custom/nightlight" "$CONFIG_HOME/waybar/config.jsonc"; then
+    omarchy-restart-waybar >/dev/null 2>&1 || true
+  fi
+}
+
+apply_nightlight() {
+  local mode target_temp
+  mode=$(current_sun_mode) || fail "Unable to calculate sunrise and sunset."
+
+  if [[ $mode == "night" ]]; then
+    target_temp=$NIGHT_TEMP
+  else
+    target_temp=$DAY_TEMP
+  fi
+
+  ensure_hyprsunset
+  hyprctl hyprsunset temperature "$target_temp" >/dev/null || fail "Unable to set hyprsunset temperature to $target_temp."
+  restart_nightlighted_waybar
+}
+
+case ${1:-apply} in
+  apply)
+    apply_nightlight
+    ;;
+  *)
+    printf 'Usage: %s [apply]\n' "$0" >&2
+    exit 2
+    ;;
+esac
