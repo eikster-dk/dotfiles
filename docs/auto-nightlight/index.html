@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Omarchy Auto Nightlight Explained</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #111318;
+      --panel: #1b1f2a;
+      --panel-soft: #232838;
+      --text: #edf1f7;
+      --muted: #aeb7c7;
+      --accent: #f5b86b;
+      --accent-2: #86d9c5;
+      --border: #343b4f;
+      --code: #10131a;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: radial-gradient(circle at top left, #252b3d 0, var(--bg) 38rem);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.6;
+    }
+
+    main {
+      width: min(68rem, calc(100% - 2rem));
+      margin: 0 auto;
+      padding: 4rem 0;
+    }
+
+    h1,
+    h2,
+    h3 {
+      line-height: 1.15;
+    }
+
+    h1 {
+      max-width: 48rem;
+      margin: 0 0 1rem;
+      font-size: clamp(2.5rem, 7vw, 5.4rem);
+      letter-spacing: -0.07em;
+    }
+
+    h2 {
+      margin: 0 0 1rem;
+      font-size: clamp(1.5rem, 3vw, 2.2rem);
+      letter-spacing: -0.04em;
+    }
+
+    h3 {
+      margin: 1.5rem 0 0.5rem;
+      color: var(--accent-2);
+      font-size: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    p {
+      margin: 0 0 1rem;
+      color: var(--muted);
+    }
+
+    code {
+      padding: 0.1rem 0.35rem;
+      border: 1px solid var(--border);
+      border-radius: 0.35rem;
+      background: var(--code);
+      color: var(--text);
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 0.92em;
+    }
+
+    pre {
+      overflow-x: auto;
+      margin: 1rem 0 0;
+      padding: 1rem;
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      background: var(--code);
+    }
+
+    pre code {
+      padding: 0;
+      border: 0;
+      background: transparent;
+    }
+
+    .hero {
+      padding: 2rem;
+      border: 1px solid var(--border);
+      border-radius: 2rem;
+      background: linear-gradient(145deg, rgba(35, 40, 56, 0.92), rgba(20, 23, 31, 0.92));
+      box-shadow: 0 2rem 6rem rgba(0, 0, 0, 0.35);
+    }
+
+    .subtitle {
+      max-width: 45rem;
+      font-size: 1.15rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1rem;
+      margin: 1.5rem 0 0;
+    }
+
+    .card,
+    section {
+      border: 1px solid var(--border);
+      border-radius: 1.25rem;
+      background: rgba(27, 31, 42, 0.86);
+    }
+
+    .card {
+      padding: 1rem;
+    }
+
+    .card strong {
+      display: block;
+      margin-bottom: 0.35rem;
+      color: var(--accent);
+    }
+
+    section {
+      margin-top: 1rem;
+      padding: 1.5rem;
+    }
+
+    .section-label {
+      display: inline-flex;
+      margin-bottom: 0.75rem;
+      padding: 0.25rem 0.6rem;
+      border: 1px solid rgba(245, 184, 107, 0.4);
+      border-radius: 999rem;
+      color: var(--accent);
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+
+    .step {
+      padding: 0.85rem;
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      background: var(--panel-soft);
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .step strong {
+      display: block;
+      color: var(--text);
+    }
+
+    ul {
+      margin: 0;
+      padding-left: 1.25rem;
+      color: var(--muted);
+    }
+
+    li + li {
+      margin-top: 0.5rem;
+    }
+
+    .note {
+      margin-top: 1rem;
+      padding: 1rem;
+      border-left: 0.25rem solid var(--accent);
+      border-radius: 0.75rem;
+      background: rgba(245, 184, 107, 0.08);
+    }
+
+    @media (max-width: 820px) {
+      main {
+        padding: 1rem 0;
+      }
+
+      .hero,
+      section {
+        padding: 1rem;
+      }
+
+      .grid,
+      .flow {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <article class="hero">
+      <h1>Omarchy Auto Nightlight</h1>
+      <p class="subtitle">This page explains the script at <code>~/.local/bin/omarchy-auto-nightlight</code>, the user systemd timer that runs it, and the Hypridle hooks that reapply it after sleep and DPMS resume.</p>
+
+      <div class="grid" aria-label="Quick facts">
+        <div class="card">
+          <strong>Data Source</strong>
+          <p><code>wttr.in</code> provides today&rsquo;s sunrise and sunset as JSON.</p>
+        </div>
+        <div class="card">
+          <strong>Nightlight Engine</strong>
+          <p><code>hyprsunset</code> applies the screen temperature through Hyprland.</p>
+        </div>
+        <div class="card">
+          <strong>Manual Override</strong>
+          <p>If you change nightlight manually, automation pauses for the rest of the day.</p>
+        </div>
+      </div>
+    </article>
+
+    <section>
+      <span class="section-label">Runtime Flow</span>
+      <h2>What Happens When The Script Runs</h2>
+      <div class="flow">
+        <div class="step"><strong>1. Load config</strong>Read temperatures and optional coordinates.</div>
+        <div class="step"><strong>2. Check override</strong>Exit if manual override is active today.</div>
+        <div class="step"><strong>3. Get sun mode</strong>Use cached or fresh <code>wttr.in</code> sunrise/sunset.</div>
+        <div class="step"><strong>4. Start engine</strong>Ensure <code>hyprsunset</code> is running.</div>
+        <div class="step"><strong>5. Apply temp</strong>Set night or day temperature and save state.</div>
+      </div>
+    </section>
+
+    <section>
+      <span class="section-label">Configuration</span>
+      <h2>Defaults And User Config</h2>
+      <p>The script starts by defining paths and defaults. It uses XDG locations when present, otherwise it falls back to <code>~/.config</code> and <code>~/.cache</code>.</p>
+      <pre><code>CONFIG_FILE="$CONFIG_HOME/omarchy/auto-nightlight.conf"
+CACHE_DIR="$CACHE_HOME/omarchy/auto-nightlight"
+SUN_CACHE="$CACHE_DIR/sun.env"
+STATE_FILE="$CACHE_DIR/state.env"
+
+NIGHT_TEMP=4000
+DAY_TEMP=6000
+SUN_OFFSET_MINUTES=0</code></pre>
+      <p>Then it sources <code>~/.config/omarchy/auto-nightlight.conf</code> if the file exists. That lets you override temperatures, the sunrise/sunset offset, or set exact coordinates.</p>
+      <div class="note">
+        <p>If <code>LATITUDE</code> and <code>LONGITUDE</code> are configured, the script asks <code>wttr.in</code> for that exact location. If not, <code>wttr.in</code> infers your approximate location from your public IP.</p>
+      </div>
+    </section>
+
+    <section>
+      <span class="section-label">Failure Handling</span>
+      <h2>Notifications When Work Fails</h2>
+      <p>The <code>fail</code> path calls <code>notify-send</code> with critical urgency, then prints the same message to stderr for systemd logs.</p>
+      <pre><code>notify-send --urgency=critical "Nightlight failed" "$message"
+printf 'omarchy-auto-nightlight: %s\n' "$message" &gt;&amp;2</code></pre>
+      <p>This means failures should be visible both as desktop notifications and in <code>journalctl --user -u omarchy-auto-nightlight.service</code>.</p>
+    </section>
+
+    <section>
+      <span class="section-label">wttr.in</span>
+      <h2>Fetching Sunrise And Sunset</h2>
+      <p>The script builds one of two URLs:</p>
+      <ul>
+        <li><code>https://wttr.in/?format=j1</code> when coordinates are not configured.</li>
+        <li><code>https://wttr.in/&lt;latitude&gt;,&lt;longitude&gt;?format=j1</code> when coordinates are configured.</li>
+      </ul>
+      <p>It reads these fields from the JSON response with <code>jq</code>:</p>
+      <pre><code>.weather[0].date
+.weather[0].astronomy[0].sunrise
+.weather[0].astronomy[0].sunset
+.request[0].query
+.nearest_area[0].areaName[0].value</code></pre>
+      <p>The date and sunrise/sunset strings are combined and parsed with <code>date -d</code>, then converted into epoch seconds. That makes later comparisons simple numeric checks.</p>
+    </section>
+
+    <section>
+      <span class="section-label">Caching</span>
+      <h2>Daily Sun Cache</h2>
+      <p>The script avoids calling <code>wttr.in</code> every five minutes. It writes a daily cache to <code>~/.cache/omarchy/auto-nightlight/sun.env</code>.</p>
+      <pre><code>SUN_CACHE_DATE=2026-05-10
+SUN_CACHE_WTTR_LOCATION=55.783,12.367
+SUN_CACHE_WTTR_QUERY='Lat 55.78 and Lon 12.38'
+SUN_CACHE_WTTR_AREA='Søndergården'
+SUNRISE_EPOCH=1778382540
+SUNSET_EPOCH=1778440020</code></pre>
+      <p>The cache is considered fresh only when it matches today&rsquo;s date and the configured <code>wttr.in</code> location. If either changes, the script fetches new data.</p>
+    </section>
+
+    <section>
+      <span class="section-label">Day Or Night</span>
+      <h2>Choosing The Target Temperature</h2>
+      <p><code>current_sun_mode</code> compares the current epoch time against the cached sunrise and sunset epochs.</p>
+      <pre><code>if ((now &lt; SUNRISE_EPOCH || now &gt;= SUNSET_EPOCH)); then
+  printf 'night\n'
+else
+  printf 'day\n'
+fi</code></pre>
+      <p>Night mode maps to <code>NIGHT_TEMP</code>. Day mode maps to <code>DAY_TEMP</code>. By default those are <code>4000</code> and <code>6000</code>.</p>
+    </section>
+
+    <section>
+      <span class="section-label">Manual Override</span>
+      <h2>Respecting Your Manual Toggle</h2>
+      <p>The script stores what it last applied in <code>~/.cache/omarchy/auto-nightlight/state.env</code>.</p>
+      <pre><code>LAST_APPLIED_DATE=2026-05-10
+LAST_APPLIED_TEMP=4000</code></pre>
+      <p>On the next run, it asks <code>hyprsunset</code> for the current temperature. If the current value differs from <code>LAST_APPLIED_TEMP</code>, the script assumes you manually toggled or overrode nightlight.</p>
+      <pre><code>MANUAL_OVERRIDE_DATE=2026-05-10</code></pre>
+      <p>Once that date is recorded, every later timer run exits without changing anything until the next local day.</p>
+      <div class="note">
+        <p>This is why manually running <code>omarchy-toggle-nightlight</code> should not be undone by the timer five minutes later.</p>
+      </div>
+    </section>
+
+    <section>
+      <span class="section-label">hyprsunset</span>
+      <h2>Applying The Temperature</h2>
+      <p>Before setting the temperature, the script ensures <code>hyprsunset</code> is running. It starts it through <code>uwsm-app</code> when available, matching Omarchy&rsquo;s own command style.</p>
+      <pre><code>setsid uwsm-app -- hyprsunset &amp;</code></pre>
+      <p>Then it applies the target temperature directly:</p>
+      <pre><code>hyprctl hyprsunset temperature "$target_temp"</code></pre>
+      <p>This is intentionally different from <code>omarchy-toggle-nightlight</code>. A timer needs idempotent behavior: at night it should set night temperature, not toggle back and forth.</p>
+    </section>
+
+    <section>
+      <span class="section-label">systemd</span>
+      <h2>How The Timer Runs It</h2>
+      <p>The user timer starts <code>omarchy-auto-nightlight.service</code>. The service runs the script once and exits.</p>
+      <pre><code>[Timer]
+OnBootSec=30s
+OnUnitActiveSec=5min
+Persistent=true</code></pre>
+      <ul>
+        <li><code>OnBootSec=30s</code> runs it shortly after your user session starts.</li>
+        <li><code>OnUnitActiveSec=5min</code> runs it every five minutes after the last run.</li>
+        <li><code>Persistent=true</code> catches up after missed runs, such as boot or resume.</li>
+      </ul>
+    </section>
+
+    <section>
+      <span class="section-label">Hypridle</span>
+      <h2>Sleep And DPMS Hooks</h2>
+      <p><code>hypridle.conf</code> calls <code>omarchy-auto-nightlight apply</code> after sleep and when DPMS resumes.</p>
+      <p>The script does not run when DPMS turns off. There is no benefit to changing screen temperature while the display is powered down, and avoiding display-affecting work at that moment reduces the chance of waking the display back up.</p>
+    </section>
+
+    <section>
+      <span class="section-label">Operations</span>
+      <h2>Useful Commands</h2>
+      <pre><code>systemctl --user status omarchy-auto-nightlight.timer
+systemctl --user list-timers omarchy-auto-nightlight.timer
+systemctl --user start omarchy-auto-nightlight.service
+journalctl --user -u omarchy-auto-nightlight.service -n 50</code></pre>
+      <p>To clear cached sun data or manual override state, remove files from <code>~/.cache/omarchy/auto-nightlight/</code>.</p>
+    </section>
+  </main>
+</body>
+</html>
